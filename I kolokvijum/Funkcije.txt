@@ -1,0 +1,128 @@
+#Ucitavanje i prikaz slike
+import plotly.express as px
+from skimage import io
+
+img = io.imread('lena.png')
+
+fig = px.imshow(img, zmin=0, zmax=255, color_continuous_scale='gray')
+fig.show()
+
+import matplotlib.pyplot as plt
+
+plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+plt.show()
+
+#Cuvanje slike i pravljenje kopije
+io.imsave('peppers2.png', img)
+
+img_A = img.copy()
+
+#plotly subplots
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import numpy as np
+
+fig = make_subplots(rows=1, cols=2)
+fig.add_trace(go.Image(z=np.stack((img_A, img_A, img_A), axis=2)), row=1, col=1)
+fig.add_trace(go.Image(z=np.stack((img_B, img_B, img_B), axis=2)), row=1, col=2)
+fig.show()
+
+#matplotlib subplots
+import matplotlib.pyplot as plt
+
+plt.subplot(1,2,1)
+plt.imshow(img_A, cmap='gray')
+plt.subplot(1,2,2)
+plt.imshow(img_B, cmap='gray')
+plt.show()
+
+
+#Flipovanje slike
+img_flipud = np.flipud(img)
+img_fliplr = np.fliplr(img)
+
+img_flipud = img[::-1]
+img_fliplr = img[::,::-1]
+
+#Promena dinamickog opsega
+def normalizeImRange(slika):
+    img_norm = (slika - slika.min())/(slika.max()-slika.min())
+    return img_norm
+
+def setRange(min, max, slika):
+    img_rng = normalizeImRange(slika) * (max-min) + min
+    return img_rng
+
+#Interpolacija
+from skimage.transform import rescale, resize
+
+img_2a = rescale(img, 1/4, order=1, preserve_range=True) - bilinearna interpolacija
+img_2b = resize(img_2a, img.shape, order=0, preserve_range=True) - interpolacija najblizim susedom
+Posle promene velicine treba roundovati i vratiti u uint8
+
+#Kvantizacija
+bit_string = '1'*broj_bita + '0'*(8-broj_bita)
+quant_mask = int(bit_string, 2)
+Q = img2 & quant_mask
+Q = np.round(Q/quant_mask*255).astype('uint8')
+
+#Pravljenje deo-po-deo linearne transformacije
+lut1 = np.linspace(0,50,101)
+lut2 = np.linspace(50,250,101)
+lut3 = np.linspace(250,255,56)
+LUT = np.concatenate((lut1[:-1],lut2[:-1],lut3),axis=0)
+img_2 = LUT[img]
+
+#Rucno racunanje histograma i njegova normalizacija
+h = np.zeros(256)
+for pixel_intensity in img.ravel():
+  h[pixel_intensity] += 1
+norm_hist = h/h.sum() #ili h/img.size
+
+#Racunanje histograma ugradjenim funkcijama
+import numpy as np
+from skimage import exposure
+
+numpy_hist, nbin_edges = np.histogram(img, bins = np.arange(257), density=True)
+skimage_hist, sbin_centers = exposure.histogram(img, source_range='dtype', normalize=True)
+
+#Udeo intenziteta u histogramu
+histogram[int1:int2].sum()
+
+#Ekvalizovan histogram
+T = 255 * np.cumsum(hist)
+
+#Ekvalizacija ugradjenom funkcijom
+from skimage import exposure
+from skimage.util import img_as_ubyte
+
+dark_eq = img_as_ubyte(exposure.equalize_hist(dark))
+
+#Rucna implementacija histograma zeljengo opsega, koraka i broja binova
+def imageHist(slika, broj_binova, granice_opsega, korak):
+    img = (slika - granice_opsega[0]) / (granice_opsega[1] - granice_opsega[0])
+    img = img[(img >= 0) & (img <= 1)]
+    img = np.round(img * (broj_binova-1)).astype('uint8')
+    img = img[::korak]
+
+    histogram = np.zeros(broj_binova)
+    for vrednost_piksela in img.ravel():
+        histogram[vrednost_piksela] += 1
+    return histogram
+
+#Odredjivanje praga ispod ili iznad kod se nalazi odredjen procenat vrednosti
+a, b = 0, 255
+suma = 0
+    for i in range(256):
+        suma += norm_hist[i]
+        if suma > donji_procenat:
+            a = i
+            break
+
+    suma = 0
+    for i in range(255, -1, -1):
+        suma += norm_hist[i]
+        if suma > gornji_procenat:
+            b = i
+            break
+

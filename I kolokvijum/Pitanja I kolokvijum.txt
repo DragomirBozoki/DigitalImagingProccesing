@@ -1,0 +1,31 @@
+Ono za tip slike, float i uint8
+Takodje za subplot, da li je moguce definisati tonsku skalu
+2 - Ono sa promenama vrednosti, zasto babun ostaje isti i sl
+2.1 - Kako mogu da otvorim dve matplotlib slike jednim kodom u dva prozora?
+2.4 - Jel lena treba da izgleda isto ili ne i kako u onom zad kad smanjimo opseg na 0 1 dobijemo drugaciju sliku
+
+p3.4 - sta tacno radi meshgrid
+3.1 - prvo i prvo kako dobije koordinate kursora
+3.2 - na koji opseg vrednosti prosirujem nakon kvantizacije, kada treba vratiti u uint8
+
+4.1 - zasto np.log kada racunamo log od int i kako samo jedan log, nismo ukljucili onu sumu iz formule
+    - zasto je gornja granica kod log 256
+
+p5.3 - zasto ide do 257
+5.1 - kako prikazati samo jedan histogram
+
+6 - da se proveri
+
+p7.7 -kako se formiraju u i v 
+     -pad:-pad??
+     -fftshift ne pomera fazni spektar jel da?
+
+Moodle zadaci 4 i 5
+
+-----------------------------------------------
+5.1 - jel se prvo menja opseg na zeljeni broj binova ili se menja korak
+jelka - kako da se napravi ona sema kada je pozadina duplo veca a ja smanjenjem dobijem samo 3/4
+
+klk 4.2 - pretpostavljam da se sobelom filtrira usrednjena slika
+        - koja treba da je tonska skala na kraju
+klk 5.2 - vrednosti dobijene na kraju

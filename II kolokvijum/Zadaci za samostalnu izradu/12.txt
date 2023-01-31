@@ -1,0 +1,103 @@
+#12.1
+import plotly.express as px
+from skimage import io
+from skimage.transform import rescale
+import numpy as np
+from scipy import ndimage
+from skimage import morphology
+
+
+img = io.imread('rtg_2.png')
+img = rescale(img, 1/10, order=1, preserve_range=True)
+
+#Odredjivanje slike ivica
+Sy = np.array([[-1, -2, -1],[0, 0, 0], [1, 2, 1]])
+Sx = np.array([[-1, 0, 1],[-2, 0, 2],[-1, 0, 1]])
+
+img = img.astype('float')
+
+G1 = ndimage.convolve(img, Sx, mode='mirror')
+G2 = ndimage.convolve(img, Sy, mode='mirror')
+G = np.sqrt(G1**2+G2**2)
+
+T = 2*np.sqrt((G**2).mean())
+G_edge = G > T
+
+G_thin = morphology.thin(G_edge)
+fig = px.imshow(G_thin, color_continuous_scale='gray')
+fig.show()
+
+
+def houghTransform(img_edge):
+  rho_max = round(np.sqrt(img_edge.shape[0]**2+img_edge.shape[1]**2))
+  theta_max = 90
+
+  rho = np.arange(-rho_max, rho_max+1)
+  theta = np.arange(-theta_max, theta_max, 0.5)
+
+  H = np.zeros((rho.size,theta.size))
+
+  for y in range(img_edge.shape[0]):
+    for x in range(img_edge.shape[1]):
+      if img_edge[y,x]:
+        for i,t in enumerate(theta):
+          r = round(y*np.cos(t*np.pi/180) + x*np.sin(t*np.pi/180))
+          H[r+rho_max, i] += 1
+
+  return H
+
+
+H = houghTransform(G_thin)
+idx = np.argsort(H,axis=None)
+mat_idx = []
+for i in range(4):
+  prom = idx[-i-1]
+  mat_idx.append(np.unravel_index(prom,H.shape))
+
+rho_max = round(np.sqrt(G_thin.shape[0]**2+G_thin.shape[1]**2))
+rho_arr = np.arange(-rho_max, rho_max+1)
+theta_max = 90
+theta_arr = np.arange(-theta_max, theta_max, 0.5)
+
+rho = []
+theta = []
+for i in range(4):
+  rho.append(rho_arr[mat_idx[i][0]])
+  theta.append(theta_arr[mat_idx[i][1]])
+print(rho)
+print(theta)
+
+img_rgb = np.stack((G_thin,G_thin,G_thin),axis=2)
+
+for y in range(G_thin.shape[0]):
+  for i in range(4):
+    x = round((rho[i] - y*np.cos(theta[i]*np.pi/180))/np.sin(theta[i]*np.pi/180))
+    if (x>=0) & (x<G_thin.shape[1]):
+      img_rgb[y,x,0] = 1
+      img_rgb[y,x,1] = 0
+      img_rgb[y,x,2] = 0
+
+fig = px.imshow(img_rgb)
+fig.show()
+
+#12.2
+import plotly.express as px
+from skimage import io
+from scipy import ndimage
+
+img = io.imread('mobile.png')
+fig = px.imshow(img, color_continuous_scale='gray')
+fig.show()
+
+
+def localThresholding(img, kernel_width, C):
+  m = ndimage.median_filter(img, size=(kernel_width, kernel_width))
+  img_localthresh = m - C
+
+  return img >= img_localthresh
+
+
+img_localseg = localThresholding(img, 5, -2)
+
+fig = px.imshow(img_localseg, color_continuous_scale='gray')
+fig.show()
